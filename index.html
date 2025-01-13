@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoAsk Clone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            padding: 20px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: white;
+        }
+
+        nav a {
+            color: #000;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #000;
+            color: white;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin: 2rem auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-container img {
+            width: 100%;
+            height: auto;
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            /* Ajout d'une ombre portée */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            /* Animation de pulsation */
+            animation: pulse 2s infinite;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: white;
+            opacity: 0.6;
+            animation: ripple 2s infinite;
+        }
+
+        .play-button::after {
+            content: '🎤';
+            font-size: 32px;
+            z-index: 1;
+        }
+
+        /* Animation de pulsation */
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Animation d'onde */
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* Effet hover amélioré */
+        .play-button:hover {
+            background: #f8f8f8;
+            transform: translate(-50%, -50%) scale(1.15);
+            transition: all 0.3s ease;
+        }
+
+        /* Effet de clic */
+        .play-button:active {
+            transform: translate(-50%, -50%) scale(0.95);
+            transition: all 0.1s ease;
+        }
+
+        /* Ajout d'un texte indicatif */
+        .play-button-hint {
+            position: absolute;
+            top: calc(50% + 50px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .video-container:hover .play-button-hint {
+            opacity: 1;
+        }
+
+        .features {
+            background: #4CAF50;
+            color: white;
+            padding: 4rem 2rem;
+            border-radius: 20px 20px 0 0;
+            margin-top: -20px;
+        }
+
+        .feature-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .feature-content h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Style de la modale */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-options {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .option-button {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option-button:hover {
+            border-color: #4CAF50;
+            background: #f8f8f8;
+            transform: translateY(-2px);
+        }
+
+        .option-button i {
+            font-size: 24px;
+            margin-right: 15px;
+            color: #4CAF50;
+        }
+
+        .option-content {
+            text-align: left;
+        }
+
+        .option-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .option-description {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Style pour le processus de traduction */
+        .translation-process {
+            /* display: none; */
+            margin-top: 2rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .translation-process.active {
+            display: block;
+        }
+
+        .process-step {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f8f8;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .step-title {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .step-content {
+            padding: 1rem;
+            background: white;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Contrôles d'enregistrement */
+        .recording-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8f8f8;
+            border-radius: 8px;
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            min-width: 100px;
+        }
+
+        .control-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .record-button {
+            background: #ff4444;
+            color: white;
+            display: none;
+        }
+
+        .pause-button {
+            background: #ffa000;
+            color: white;
+        }
+
+        .stop-button {
+            background: #333;
+            color: white;
+        }
+
+        .translate-button {
+            background: #4CAF50;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .control-button:hover {
+            transform: scale(1.05);
+        }
+
+        .audio-player {
+            width: 100%;
+            margin-top: 1rem;
+            display: none;
+        }
+        .audio-player.active{
+            display: inline-block;
+        }
+
+        .result-text {
+            white-space: pre-wrap;
+            padding: 1rem;
+            background: #f8f8f8;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+        #recordModal .modal-content{
+            max-width: 800px;
+        }
+        .recording-controls.none{
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="logo">Traduction</div>
+        <div class="nav-links">
+            <a href="#how-it-works">How it works</a>
+            <a href="#use-case">Use Case</a>
+            <a href="#embed">Embed</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#help">Help</a>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn">Login</button>
+            <button class="btn btn-primary">Sign Up</button>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <h1>The Best Interface Is your Face</h1>
+            <p>VideoAsk allows you to have asynchronous conversations with your customers on web & mobile.</p>
+            <button class="btn btn-primary">Sign Up</button>
+
+            <div class="video-container">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+                    <!-- Fond -->
+                    <rect width="800" height="400" fill="#f5f5f5" />
+
+                    <!-- Cercle français -->
+                    <circle cx="200" cy="200" r="120" fill="#3498db" opacity="0.1" />
+                    <text x="200" y="200" text-anchor="middle" fill="#2980b9" font-size="28"
+                        font-weight="bold">FR</text>
+
+                    <!-- Cercle fon -->
+                    <circle cx="600" cy="200" r="120" fill="#2ecc71" opacity="0.1" />
+                    <text x="600" y="200" text-anchor="middle" fill="#27ae60" font-size="28"
+                        font-weight="bold">FON</text>
+
+                    <!-- Flèche de traduction -->
+                    <path d="M340 200 L460 200 M440 180 L460 200 L440 220" stroke="#34495e" stroke-width="4"
+                        fill="none" />
+
+                    <!-- Ondes sonores françaises -->
+                    <path d="M160 140 Q200 140, 240 140" stroke="#3498db" stroke-width="3" fill="none" />
+                    <path d="M150 170 Q200 170, 250 170" stroke="#3498db" stroke-width="3" fill="none" />
+                    <path d="M140 200 Q200 200, 260 200" stroke="#3498db" stroke-width="3" fill="none" />
+                    <path d="M150 230 Q200 230, 250 230" stroke="#3498db" stroke-width="3" fill="none" />
+                    <path d="M160 260 Q200 260, 240 260" stroke="#3498db" stroke-width="3" fill="none" />
+
+                    <!-- Ondes sonores fon -->
+                    <path d="M560 140 Q600 140, 640 140" stroke="#2ecc71" stroke-width="3" fill="none" />
+                    <path d="M550 170 Q600 170, 650 170" stroke="#2ecc71" stroke-width="3" fill="none" />
+                    <path d="M540 200 Q600 200, 660 200" stroke="#2ecc71" stroke-width="3" fill="none" />
+                    <path d="M550 230 Q600 230, 650 230" stroke="#2ecc71" stroke-width="3" fill="none" />
+                    <path d="M560 260 Q600 260, 640 260" stroke="#2ecc71" stroke-width="3" fill="none" />
+
+                    <!-- Icônes microphone -->
+                    <path d="M180 150 h40 v60 h-40 z M200 210 v20 M180 230 h40" stroke="#3498db" stroke-width="2"
+                        fill="none" />
+                    <path d="M580 150 h40 v60 h-40 z M600 210 v20 M580 230 h40" stroke="#2ecc71" stroke-width="2"
+                        fill="none" />
+                </svg>
+                <div class="play-button"></div>
+                <div class="play-button-hint">Cliquez pour lancer la traduction</div>
+            </div>
+        </section>
+
+        <!-- <section class="features">
+            <div class="feature-content">
+                <h2>Personal Conversation at scale</h2>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <h3>Easy Recording</h3>
+                        <p>Just fire up VideoAsk, push the record button, ask a question, and share your link. Easy and done.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Multiple Responses</h3>
+                        <p>People can respond via video, audio, and text etc. Want to follow up with someone? Just hit reply to keep the conversation going.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3>Always Available</h3>
+                        <p>Every conversation is recorded, transcribed, and organized for you.</p>
+                    </div>
+                </div>
+            </div>
+        </section> -->
+        <!-- Modale -->
+        <div class="modal" id="audioModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">Choisissez une option</div>
+                    <button class="modal-close">×</button>
+                </div>
+                <div class="modal-options">
+                    <div class="option-button" id="recordButton">
+                        <div class="option-content">
+                            <div class="option-title">🎤 Enregistrer l'audio</div>
+                            <div class="option-description">Enregistrer directement depuis votre microphone</div>
+                        </div>
+                    </div>
+
+                    <label for="fileInput" class="option-button">
+                        <div class="option-content">
+                            <div class="option-title">📁 Choisir un fichier</div>
+                            <div class="option-description">Sélectionner un fichier audio depuis votre appareil</div>
+                        </div>
+                    </label>
+                    <input type="file" id="fileInput" accept="audio/*">
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="recordModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">Choisissez une option</div>
+                    <button class="modal-close">×</button>
+                </div>
+                <div class="translation-process" id="translationProcess">
+                    <!-- Contrôles d'enregistrement -->
+                    <div class="recording-controls" id="recordingControls">
+                        <div class="timer">00:00</div>
+                        <button class="control-button record-button" id="recordBtn">
+                            🎤 Enregistrer
+                        </button>
+                        <button class="control-button pause-button" id="pauseBtn" disabled>
+                            ⏸️ Pause
+                        </button>
+                        <button class="control-button stop-button" id="stopBtn" disabled>
+                            ⏹️ Stop
+                        </button>
+                    </div>
+
+                    <!-- Bouton de traduction -->
+                    <button class="control-button translate-button" id="translateBtn" disabled>
+                        Traduire
+                    </button>
+
+                    <!-- Étapes du processus -->
+                    <div class="process-step">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <div class="step-title">Transcription en français</div>
+                        </div>
+                        <div class="step-content" id="transcriptionResult"></div>
+                    </div>
+
+                    <div class="process-step">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <div class="step-title">Traduction en fon</div>
+                        </div>
+                        <div class="step-content" id="translationResult"></div>
+                    </div>
+
+                    <div class="process-step">
+                        <div class="step-header">
+                            <div class="step-number">3</div>
+                            <div class="step-title">Audio en fon</div>
+                        </div>
+                        <div class="step-content">
+                            <div id="audioResult"></div>
+                            <audio controls class="audio-player" id="resultAudio"></audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Animation pour le bouton play
+        document.querySelector('.play-button').addEventListener('mouseover', function () {
+            this.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+
+        document.querySelector('.play-button').addEventListener('mouseout', function () {
+            this.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
+
+        // Animation pour les boutons
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('mouseover', function () {
+                this.style.transform = 'scale(1.05)';
+                this.style.transition = 'transform 0.2s ease';
+            });
+
+            button.addEventListener('mouseout', function () {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+    <script>
+        document.querySelectorAll(".modal").forEach((modal) => {
+            // Fermer la modale
+            modal.querySelector('.modal-close')?.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+
+            // Fermer la modale en cliquant en dehors
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+    </script>
+    <script>
+        // Gestion de la modale
+        const modal = document.getElementById('audioModal');
+        const playButton = document.querySelector('.play-button');
+        // const closeButton = document.querySelector('.modal-close');
+        const recordButton = document.getElementById('recordButton');
+        const fileInput = document.getElementById('fileInput');
+
+        // Ouvrir la modale
+        playButton.addEventListener('click', () => {
+            modal.classList.add('active');
+        });
+
+        // // Fermer la modale
+        // closeButton.addEventListener('click', () => {
+        //     modal.classList.remove('active');
+        // });
+
+        // // Fermer la modale en cliquant en dehors
+        // modal.addEventListener('click', (e) => {
+        //     if (e.target === modal) {
+        //         modal.classList.remove('active');
+        //     }
+        // });
+        function handleStartRecord(){
+            modal.classList.remove('active');
+            document.getElementById('recordModal').classList.add('active');
+
+            blob = null;
+            audioChunks.length = 0;
+        }
+
+        // Gestion de l'enregistrement
+        recordButton.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                console.log('Accès au microphone accordé');
+                // Ici vous pouvez ajouter la logique d'enregistrement
+                handleStartRecord();
+                startRecording();
+                recordingControls.classList.remove("none");
+            } catch (err) {
+                console.error('Erreur d\'accès au microphone:', err);
+                alert('Impossible d\'accéder au microphone');
+            }
+        });
+
+        // Gestion du fichier audio
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                console.log('Fichier sélectionné:', file.name);
+                // Ici vous pouvez ajouter la logique de traitement du fichier
+                handleStartRecord();
+                recordingControls.classList.add("none");
+                blob = file;
+            }
+        });
+    </script>
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let timer;
+        let timerInterval;
+        let isPaused = false;
+        let startTime = 0;
+        let pausedTime = 0;
+        const audioTranslated = document.getElementById('resultAudio');
+        const audioFile = null;
+        const recordingControls = document.querySelector(".recording-controls");
+        let blob = null;
+
+        // Fonction pour formater le temps
+        function formatTime(ms) {
+            const seconds = Math.floor((ms / 1000) % 60);
+            const minutes = Math.floor((ms / 1000 / 60) % 60);
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Démarrer/reprendre l'enregistrement
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.start();
+                startTime = Date.now() - pausedTime;
+                timerInterval = setInterval(updateTimer, 100);
+
+                document.getElementById('recordBtn').disabled = true;
+                document.getElementById('pauseBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = false;
+
+                // Afficher l'interface de traduction
+                document.getElementById('translationProcess').classList.add('active');
+            } catch (err) {
+                console.error('Erreur:', err);
+                alert('Impossible d\'accéder au microphone');
+            }
+        }
+
+        // Mettre en pause l'enregistrement
+        function pauseRecording() {
+            if (!isPaused) {
+                mediaRecorder.pause();
+                clearInterval(timerInterval);
+                pausedTime = Date.now() - startTime;
+                document.getElementById('pauseBtn').textContent = '▶️ Reprendre';
+            } else {
+                mediaRecorder.resume();
+                startTime = Date.now() - pausedTime;
+                timerInterval = setInterval(updateTimer, 100);
+                document.getElementById('pauseBtn').textContent = '⏸️ Pause';
+            }
+            isPaused = !isPaused;
+        }
+
+        // Arrêter l'enregistrement
+        function stopRecording() {
+            mediaRecorder.stop();
+            clearInterval(timerInterval);
+            document.getElementById('recordBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('translateBtn').disabled = false;
+            blob = new Blob(audioChunks);
+        }
+
+        // Mettre à jour le timer
+        function updateTimer() {
+            const currentTime = Date.now() - startTime;
+            document.querySelector('.timer').textContent = formatTime(currentTime);
+        }
+
+        // Simuler le processus de traduction
+        async function startTranslation() {
+            const steps = ['transcriptionResult', 'translationResult', 'audioResult'];
+            const messages = [
+                'Transcription en cours...',
+                'Traduction en cours...',
+                'Génération de l\'audio en cours...'
+            ];
+
+            for (let i = 0; i < steps.length; i++) {
+                const element = document.getElementById(steps[i]);
+                element.innerHTML = messages[i] + '<div class="loading"></div>';
+
+                // Simuler le traitement
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Simuler les résultats
+                if (i === 0) {
+                    element.innerHTML = 'Texte transcrit en français...';
+                } else if (i === 1) {
+                    element.innerHTML = 'Texte traduit en fon...';
+                } else {
+                    audioTranslated.classList.add('active');
+                    audioTranslated.src = URL.createObjectURL(blob);
+                    element.innerHTML = "";
+                }
+            }
+        }
+
+        // Event listeners
+        document.getElementById('recordBtn').addEventListener('click', startRecording);
+        document.getElementById('pauseBtn').addEventListener('click', pauseRecording);
+        document.getElementById('stopBtn').addEventListener('click', stopRecording);
+        document.getElementById('translateBtn').addEventListener('click', startTranslation);
+    </script>
+</body>
+
+</html>
