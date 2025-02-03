@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VideoAsk Clone</title>
+    <title>Traduction Audio Français Fon</title>
     <style>
         * {
             margin: 0;
@@ -486,6 +486,7 @@
         }
         #recordModal .modal-content{
             max-width: 800px;
+            overflow-y: scroll;
         }
         .recording-controls.none{
             display: none;
@@ -495,7 +496,7 @@
 
 <body>
     <nav>
-        <div class="logo">Traduction</div>
+        <div class="logo">Translation</div>
         <div class="nav-links">
             <a href="#how-it-works">How it works</a>
             <a href="#use-case">Use Case</a>
@@ -511,8 +512,8 @@
 
     <main>
         <section class="hero">
-            <h1>The Best Interface Is your Face</h1>
-            <p>VideoAsk allows you to have asynchronous conversations with your customers on web & mobile.</p>
+            <h1>The Best Translator from French to Fon</h1>
+            <!-- <p>VideoAsk allows you to have asynchronous conversations with your customers on web & mobile.</p> -->
             <button class="btn btn-primary">Sign Up</button>
 
             <div class="video-container">
@@ -755,6 +756,7 @@
                 handleStartRecord();
                 recordingControls.classList.add("none");
                 blob = file;
+                document.getElementById('translateBtn').disabled = false;
             }
         });
     </script>
@@ -839,6 +841,8 @@
 
         // Simuler le processus de traduction
         async function startTranslation() {
+            if(blob.size === 0)
+                blob = new Blob(audioChunks);
             const steps = ['transcriptionResult', 'translationResult', 'audioResult'];
             const messages = [
                 'Transcription en cours...',
@@ -850,21 +854,63 @@
                 const element = document.getElementById(steps[i]);
                 element.innerHTML = messages[i] + '<div class="loading"></div>';
 
-                // Simuler le traitement
-                await new Promise(resolve => setTimeout(resolve, 2000));
-
-                // Simuler les résultats
-                if (i === 0) {
-                    element.innerHTML = 'Texte transcrit en français...';
-                } else if (i === 1) {
-                    element.innerHTML = 'Texte traduit en fon...';
-                } else {
+                if(i === 0){
+                    try {
+                        const result = await uploadAudio(blob);
+                        if(result["status"] == "success"){
+                            console.log('Upload réussi:', result);
+                            element.innerHTML = result["message"];
+                        }else{
+                            alert(result["message"]);
+                            location.reload();
+                        }
+                    } catch (err) {
+                        // console.log('Échec de l\'upload:', err);
+                        alert(err.message);
+                        location.reload();
+                        //s console.error('Échec de l\'upload:', err);
+                    }
+                }else {
+                    // Simuler le traitement
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                     audioTranslated.classList.add('active');
                     audioTranslated.src = URL.createObjectURL(blob);
                     element.innerHTML = "";
                 }
             }
         }
+        // Fonction asynchrone pour envoyer un blob audio
+        async function uploadAudio(audioBlob) {
+            try {
+                // Créer un FormData pour envoyer le blob
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'audio.wav');
+
+                // Effectuer la requête avec fetch
+                const response = await fetch('http://127.0.0.1:8000/transcriber/api/transcribe/', {
+                method: 'POST',
+                body: formData,
+                });
+
+                // Vérifier si la réponse est réussie
+                if (!response.ok) {
+                throw new Error('Une erreur est survenue lors de l\'upload.');
+                }
+
+                // Récupérer la réponse JSON du serveur
+                const data = await response.json();
+                // if (data.status === 'error') {
+                //     throw new Error(data.message);
+                // }
+                // console.log('Réponse du serveur:', data);
+
+                return data; // Retourner les données pour un usage ultérieur
+            } catch (error) {
+                // console.error('Erreur:', error);
+                throw error; // Lancer l'erreur pour qu'elle puisse être gérée ailleurs
+            }
+        }
+
 
         // Event listeners
         document.getElementById('recordBtn').addEventListener('click', startRecording);
